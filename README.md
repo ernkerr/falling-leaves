@@ -1,8 +1,8 @@
 # falling-leaves 🍂
 
-Falling autumn leaves for any website. Small (~6 KB minified), no dependencies, drawn on a canvas, with an optional React component.
+Falling autumn leaves for any website. Small (~8 KB minified), no dependencies, drawn on a canvas, with an optional React component.
 
-- Maple and oval leaves in autumn colors, or your own leaf images
+- Maple, oak, ginkgo, birch and oval leaves in autumn colors, or your own leaf images
 - Leaves sway, spin and tumble as they fall
 - Change options while it runs, with no restart
 - Doesn't animate for people whose system asks for reduced motion
@@ -45,6 +45,9 @@ import { FallingLeaves } from 'falling-leaves/react';
 <div style={{ position: 'relative', height: 400 }}>
   <FallingLeaves count={50} wind={[0.5, 2]} />
 </div>
+
+// Every option is a prop. Changing a prop updates the leaves without restarting.
+<FallingLeaves fullScreen shapes={['ginkgo']} speed={[1, 2]} wind={[-1, 1]} />
 ```
 
 It's safe to use with server rendering: nothing runs until the component mounts in the browser. In the Next.js App Router, use it inside a `'use client'` component.
@@ -61,8 +64,8 @@ Range options take either one number or a `[min, max]` pair, and each leaf picks
 | `wind` | `[-0.3, 0.8]` | Sideways drift. Negative blows left |
 | `sway` | `[0.4, 1.4]` | How far leaves swing side to side |
 | `rotationSpeed` | `[-1.5, 1.5]` | Spin in degrees per frame |
-| `colors` | autumn palette | Leaf colors (any CSS color) |
-| `shapes` | `['maple', 'oval']` | Which built-in shapes to use |
+| `colors` | autumn palette | Leaf colors (any CSS color). By default ginkgo leaves are gold |
+| `shapes` | `['maple', 'oak', 'ginkgo', 'birch']` | Which built-in shapes to use: `'maple'`, `'oak'`, `'ginkgo'`, `'birch'`, `'oval'` |
 | `images` | — | Your own leaf images (`HTMLImageElement`, canvas, etc.). Replaces `colors` and `shapes` |
 | `opacity` | `1` | Leaf opacity |
 | `zIndex` | `9999` full page, `0` in a container | Canvas z-index |

@@ -1,5 +1,5 @@
 import { createLeaf, maxSize, pick, stepLeaf, type Leaf, type MotionOptions } from './leaf';
-import { createLeafSprite, type LeafShape } from './sprites';
+import { createLeafSprite, DEFAULT_SHAPES, SHAPE_COLORS, type LeafShape } from './sprites';
 
 export interface FallingLeavesOptions extends Partial<MotionOptions> {
   /**
@@ -9,9 +9,15 @@ export interface FallingLeavesOptions extends Partial<MotionOptions> {
   container?: HTMLElement;
   /** How many leaves are on screen at once. Default 30. */
   count?: number;
-  /** Leaf colors. Each leaf is drawn in one of these. */
+  /**
+   * Leaf colors. Each leaf is drawn in one of these. By default ginkgo
+   * leaves are gold and the others use a red-orange autumn palette.
+   */
   colors?: string[];
-  /** Built-in leaf shapes to mix. Default both `'maple'` and `'oval'`. */
+  /**
+   * Built-in leaf shapes to mix: `'maple'`, `'oak'`, `'ginkgo'`, `'birch'`
+   * and `'oval'`. Default is every shape except `'oval'`.
+   */
   shapes?: LeafShape[];
   /**
    * Your own leaf pictures. When set, these are drawn instead of the
@@ -174,18 +180,20 @@ export class FallingLeaves {
 
   /** Rebuilds the leaf pictures, but only when colors, shapes or images changed. */
   private refreshDrawables(): void {
-    const { images, colors = DEFAULT_COLORS, shapes = ['maple', 'oval'] } = this.options;
+    const { images, colors, shapes = DEFAULT_SHAPES } = this.options;
     if (images && images.length > 0) {
       this.drawables = images;
       this.spriteKey = '';
       return;
     }
-    const key = `${colors.join(',')}|${shapes.join(',')}`;
+    const key = `${colors?.join(',') ?? ''}|${shapes.join(',')}`;
     if (key === this.spriteKey) return;
     this.spriteKey = key;
     this.drawables = [];
     for (const shape of shapes) {
-      for (const color of colors) this.drawables.push(createLeafSprite(color, shape));
+      for (const color of colors ?? SHAPE_COLORS[shape] ?? DEFAULT_COLORS) {
+        this.drawables.push(createLeafSprite(color, shape));
+      }
     }
   }
 
