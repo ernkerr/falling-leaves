@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>falling-leaves demo</title>
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: system-ui, sans-serif; color: #3b2a1a;
+           background: linear-gradient(#fdf3e3, #f6dfbf); }
+    main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
+    h1 { font-size: 2.2rem; margin: 0 0 8px; }
+    label { display: grid; grid-template-columns: 110px 1fr 48px; align-items: center; gap: 8px; margin: 10px 0; }
+    .panel { background: rgba(255,255,255,0.7); border-radius: 12px; padding: 16px 20px; }
+    button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid #b5651d; background: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>falling-leaves</h1>
+    <p>Dependency-free falling leaves for any website. Change the settings below.</p>
+    <div class="panel">
+      <label>Count <input id="count" type="range" min="0" max="150" value="30" /><output></output></label>
+      <label>Wind <input id="wind" type="range" min="-3" max="3" step="0.1" value="0.3" /><output></output></label>
+      <label>Speed <input id="speed" type="range" min="0.2" max="4" step="0.1" value="1" /><output></output></label>
+      <label>Size <input id="size" type="range" min="8" max="60" value="22" /><output></output></label>
+      <button id="toggle">Pause</button>
+    </div>
+  </main>
+  <script type="module">
+    import { FallingLeaves } from '../dist/index.js';
+
+    const leaves = new FallingLeaves({ respectReducedMotion: false });
+    const $ = (id) => document.getElementById(id);
+    const read = () => {
+      const wind = +$('wind').value, speed = +$('speed').value, size = +$('size').value;
+      leaves.update({
+        count: +$('count').value,
+        wind: [wind - 0.5, wind + 0.5],
+        speed: [speed * 0.6, speed * 1.4],
+        size: [size * 0.6, size * 1.4],
+      });
+      for (const input of document.querySelectorAll('input')) input.nextElementSibling.textContent = input.value;
+    };
+    document.querySelectorAll('input').forEach((i) => i.addEventListener('input', read));
+    read();
+
+    let running = true;
+    $('toggle').onclick = () => {
+      running = !running;
+      running ? leaves.start() : leaves.stop();
+      $('toggle').textContent = running ? 'Pause' : 'Play';
+    };
+  </script>
+</body>
+</html>
