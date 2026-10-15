@@ -1,55 +1,286 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>falling-leaves demo</title>
-  <style>
-    body { margin: 0; min-height: 100vh; font-family: system-ui, sans-serif; color: #3b2a1a;
-           background: linear-gradient(#fdf3e3, #f6dfbf); }
-    main { max-width: 520px; margin: 0 auto; padding: 48px 16px; }
-    h1 { font-size: 2.2rem; margin: 0 0 8px; }
-    label { display: grid; grid-template-columns: 110px 1fr 48px; align-items: center; gap: 8px; margin: 10px 0; }
-    .panel { background: rgba(255,255,255,0.7); border-radius: 12px; padding: 16px 20px; }
-    button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid #b5651d; background: #fff; cursor: pointer; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="falling-leaves: a lightweight, dependency-free canvas animation of falling autumn leaves for any website or React app.">
+<title>falling-leaves</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one narrow column under an open October sky; leaves fall over everything. */
+  :root {
+    --sky: #e4ecef;
+    --sky-low: #f3eee4;
+    --ink: #1f2a2e;
+    --muted: #55656b;
+    --panel: rgba(255, 255, 255, 0.72);
+    --line: #c9d5d9;
+    --accent: #b8460e;
+    --accent-ink: #ffffff;
+    --code-bg: #1f2a2e;
+    --code-fg: #f1e9dc;
+    --track: #c9d5d9;
+    --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky: #0f1b24; --sky-low: #1d1f22; --ink: #eef1ee; --muted: #a2b0b4;
+      --panel: rgba(22, 34, 43, 0.78); --line: #2d3f4a; --accent: #f08c3a; --accent-ink: #1a1206;
+      --code-bg: #08121a; --code-fg: #f1e9dc; --track: #2d3f4a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky: #0f1b24; --sky-low: #1d1f22; --ink: #eef1ee; --muted: #a2b0b4;
+    --panel: rgba(22, 34, 43, 0.78); --line: #2d3f4a; --accent: #f08c3a; --accent-ink: #1a1206;
+    --code-bg: #08121a; --code-fg: #f1e9dc; --track: #2d3f4a; color-scheme: dark;
+  }
+
+  html { background: var(--sky-low); }
+  body { margin: 0; }
+  body {
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky) 45%, var(--sky-low) 100%);
+    color: var(--ink);
+    font: 400 1rem/1.55 var(--font-body);
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 34rem;
+    margin: 0 auto;
+    padding-block: 2.5rem 4rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  header { display: grid; gap: 0.75rem; }
+  .eyebrow {
+    font: 500 0.75rem/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin: 0;
+    font: 800 clamp(2.6rem, 11vw, 4rem)/0.95 var(--font-display);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  h1 span { color: var(--accent); }
+  .lede { margin: 0; color: var(--muted); max-width: 30rem; font-size: 1.05rem; }
+
+  .install {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--code-bg); color: var(--code-fg);
+    border-radius: 10px; padding: 0.4rem 0.4rem 0.4rem 1rem;
+    font: 400 0.95rem/1 var(--font-mono);
+  }
+  .install code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; padding-block: 0.6rem; }
+  .install code::before { content: "$ "; opacity: 0.5; }
+
+  button {
+    font: 600 0.9rem/1 var(--font-body);
+    border-radius: 8px; cursor: pointer; padding: 0.65rem 0.9rem;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+    min-height: 40px;
+  }
+  button.quiet { background: transparent; color: var(--ink); border-color: var(--line); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  h2 { margin: 0; font: 500 1.35rem/1.2 var(--font-display); letter-spacing: -0.01em; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.1rem 1.1rem 1.25rem;
+    display: grid; gap: 0.9rem;
+  }
+  .row { display: grid; grid-template-columns: 4.5rem 1fr 3.2rem; align-items: center; gap: 0.75rem; }
+  .row label { font-weight: 600; }
+  .row output { font: 500 0.85rem/1 var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); min-width: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.45rem 0.8rem; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .chip input { accent-color: var(--accent); margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .note {
+    border: 1px dashed var(--accent); border-radius: 10px; padding: 0.8rem 1rem;
+    display: grid; gap: 0.6rem; justify-items: start;
+  }
+  .note p { margin: 0; }
+
+  .tabs { display: flex; gap: 0.25rem; }
+  .tabs button { background: transparent; color: var(--muted); border-color: transparent; padding: 0.5rem 0.8rem; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-color: var(--line); background: var(--panel); }
+  pre {
+    margin: 0; overflow-x: auto;
+    background: var(--code-bg); color: var(--code-fg);
+    border-radius: 10px; padding: 1rem;
+    font: 400 0.82rem/1.6 var(--font-mono);
+  }
+  .k { color: #f0a35e; }
+  .s { color: #b5d48c; }
+  .c { color: #8d9aa0; }
+
+  footer { color: var(--muted); font-size: 0.85rem; }
+</style>
 </head>
 <body>
-  <main>
-    <h1>falling-leaves</h1>
-    <p>Dependency-free falling leaves for any website. Change the settings below.</p>
-    <div class="panel">
-      <label>Count <input id="count" type="range" min="0" max="150" value="30" /><output></output></label>
-      <label>Wind <input id="wind" type="range" min="-3" max="3" step="0.1" value="0.3" /><output></output></label>
-      <label>Speed <input id="speed" type="range" min="0.2" max="4" step="0.1" value="1" /><output></output></label>
-      <label>Size <input id="size" type="range" min="8" max="60" value="22" /><output></output></label>
-      <button id="toggle">Pause</button>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">npm package · 8 KB · no dependencies</div>
+    <h1>falling<span>-</span>leaves</h1>
+    <p class="lede">Maple leaves that sway, spin and tumble down any web page, with oak, ginkgo and birch if you want them. Works on its own or as a React component.</p>
+    <div class="install">
+      <code id="install-cmd">npm i falling-leaves</code>
+      <button id="copy" type="button">Copy</button>
     </div>
-  </main>
-  <script type="module">
-    import { FallingLeaves } from '../dist/index.js';
+  </header>
 
-    const leaves = new FallingLeaves({ respectReducedMotion: false });
-    const $ = (id) => document.getElementById(id);
-    const read = () => {
-      const wind = +$('wind').value, speed = +$('speed').value, size = +$('size').value;
+  <div class="note" id="reduced-note" hidden>
+    <p>Your device is set to reduce motion, so the leaves are paused. The package does this for every visitor by default.</p>
+    <button id="show-anyway" type="button">Show the leaves anyway</button>
+  </div>
+
+  <section class="panel" aria-labelledby="try-heading">
+    <h2 id="try-heading">Try it</h2>
+    <div class="row"><label for="count">Leaves</label><input id="count" type="range" min="0" max="150" value="30"><output for="count"></output></div>
+    <div class="row"><label for="wind">Wind</label><input id="wind" type="range" min="-3" max="3" step="0.1" value="0.3"><output for="wind"></output></div>
+    <div class="row"><label for="speed">Speed</label><input id="speed" type="range" min="0.2" max="4" step="0.1" value="1"><output for="speed"></output></div>
+    <div class="row"><label for="size">Size</label><input id="size" type="range" min="8" max="60" value="22"><output for="size"></output></div>
+    <div class="chips" role="group" aria-label="Leaf shapes">
+      <label class="chip"><input type="checkbox" id="shape-maple" checked> Maple</label>
+      <label class="chip"><input type="checkbox" id="shape-oak"> Oak</label>
+      <label class="chip"><input type="checkbox" id="shape-ginkgo"> Ginkgo</label>
+      <label class="chip"><input type="checkbox" id="shape-birch"> Birch</label>
+      <label class="chip"><input type="checkbox" id="shape-oval"> Oval</label>
+    </div>
+    <div class="actions">
+      <button id="toggle" type="button">Pause</button>
+      <button id="reset" type="button" class="quiet">Reset</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="use-heading" style="display:grid;gap:0.75rem">
+    <h2 id="use-heading">Use it</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-js" aria-selected="true" type="button">JavaScript</button>
+      <button role="tab" id="tab-react" aria-selected="false" type="button">React</button>
+    </div>
+<pre id="code-js"><span class="k">import</span> { FallingLeaves } <span class="k">from</span> <span class="s">'falling-leaves'</span>;
+
+<span class="c">// Covers the whole page</span>
+<span class="k">const</span> leaves = <span class="k">new</span> FallingLeaves({
+  count: <span class="s">40</span>,
+  wind: [<span class="s">0.2</span>, <span class="s">1.2</span>],
+  shapes: [<span class="s">'maple'</span>, <span class="s">'ginkgo'</span>],
+});
+
+leaves.update({ count: <span class="s">80</span> }); <span class="c">// change it live</span>
+leaves.destroy();             <span class="c">// clean up</span></pre>
+<pre id="code-react" hidden><span class="k">import</span> { FallingLeaves } <span class="k">from</span> <span class="s">'falling-leaves/react'</span>;
+
+<span class="k">export default function</span> App() {
+  <span class="k">return</span> (
+    &lt;&gt;
+      &lt;FallingLeaves
+        fullScreen
+        count={<span class="s">40</span>}
+        speed={[<span class="s">0.8</span>, <span class="s">1.6</span>]}
+        shapes={[<span class="s">'oak'</span>, <span class="s">'birch'</span>]}
+      /&gt;
+      &lt;main&gt;…&lt;/main&gt;
+    &lt;/&gt;
+  );
+}</pre>
+  </section>
+
+  <footer>MIT licensed. Leaves pause automatically for people who prefer reduced motion, and taps pass straight through them.</footer>
+</div>
+
+<script type="module">
+  import { FallingLeaves } from '../dist/index.js';
+
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var SHAPES = ['maple', 'oak', 'ginkgo', 'birch', 'oval'];
+    var small = window.innerWidth < 500;
+    var defaults = { count: small ? 22 : 30, wind: 0.3, speed: 1, size: small ? 20 : 22 };
+
+    var leaves = new FallingLeaves();
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) $('reduced-note').hidden = false;
+
+    var running = !reduced;
+    function setRunning(on) {
+      running = on;
+      if (on) leaves.start(); else leaves.stop();
+      $('toggle').textContent = on ? 'Pause' : 'Play';
+    }
+    setRunning(running);
+
+    function apply() {
+      var wind = +$('wind').value, speed = +$('speed').value, size = +$('size').value;
+      var shapes = SHAPES.filter(function (s) { return $('shape-' + s).checked; });
+      if (!shapes.length) { $('shape-maple').checked = true; shapes.push('maple'); }
       leaves.update({
         count: +$('count').value,
         wind: [wind - 0.5, wind + 0.5],
         speed: [speed * 0.6, speed * 1.4],
         size: [size * 0.6, size * 1.4],
+        shapes: shapes,
       });
-      for (const input of document.querySelectorAll('input')) input.nextElementSibling.textContent = input.value;
-    };
-    document.querySelectorAll('input').forEach((i) => i.addEventListener('input', read));
-    read();
+      ['count', 'wind', 'speed', 'size'].forEach(function (id) {
+        $(id).nextElementSibling.textContent = $(id).value;
+      });
+    }
+    function reset() {
+      Object.keys(defaults).forEach(function (k) { $(k).value = defaults[k]; });
+      SHAPES.forEach(function (s) { $('shape-' + s).checked = s === 'maple'; });
+      apply();
+    }
+    document.querySelectorAll('input').forEach(function (i) { i.addEventListener('input', apply); });
+    $('reset').addEventListener('click', reset);
+    $('toggle').addEventListener('click', function () {
+      if (reduced) { leaves.update({ respectReducedMotion: false }); $('reduced-note').hidden = true; reduced = false; }
+      setRunning(!running);
+    });
+    $('show-anyway').addEventListener('click', function () {
+      leaves.update({ respectReducedMotion: false });
+      reduced = false;
+      $('reduced-note').hidden = true;
+      setRunning(true);
+    });
+    reset();
 
-    let running = true;
-    $('toggle').onclick = () => {
-      running = !running;
-      running ? leaves.start() : leaves.stop();
-      $('toggle').textContent = running ? 'Pause' : 'Play';
-    };
-  </script>
+    $('copy').addEventListener('click', function () {
+      var btn = this;
+      var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+      var fallback = function () {
+        var r = document.createRange(); r.selectNodeContents($('install-cmd'));
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = 'Selected';
+      };
+      try { navigator.clipboard.writeText('npm i falling-leaves').then(done, fallback); } catch (e) { fallback(); }
+    });
+
+    function showTab(which) {
+      var js = which === 'js';
+      $('tab-js').setAttribute('aria-selected', String(js));
+      $('tab-react').setAttribute('aria-selected', String(!js));
+      $('code-js').hidden = !js;
+      $('code-react').hidden = js;
+    }
+    $('tab-js').addEventListener('click', function () { showTab('js'); });
+    $('tab-react').addEventListener('click', function () { showTab('react'); });
+  })();
+</script>
 </body>
 </html>

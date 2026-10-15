@@ -38,6 +38,25 @@ export interface Leaf {
   rFlipFreq: number;
 }
 
+/**
+ * How a kind of leaf moves, relative to the options. Light, flat leaves
+ * like ginkgo and birch drift side to side instead of spinning.
+ */
+export interface MotionProfile {
+  /** Multiplies how far the leaf swings side to side. */
+  sway: number;
+  /** Multiplies how fast the side-to-side swing is. */
+  swayFreq: number;
+  /** Multiplies spin speed. */
+  spin: number;
+  /** Multiplies how fast the leaf tumbles over. */
+  flip: number;
+  /** Degrees the leaf tilts back and forth as it swings, like a pendulum. */
+  rock: number;
+}
+
+export const DEFAULT_PROFILE: MotionProfile = { sway: 1, swayFreq: 1, spin: 1, flip: 1, rock: 0 };
+
 export type Random = () => number;
 
 /** Picks the value at `t` (0–1) between a range's ends. */
@@ -96,20 +115,21 @@ export function stepLeaf(
   height: number,
   variants: number,
   random: Random,
+  profile: MotionProfile = DEFAULT_PROFILE,
 ): void {
   const size = pick(opts.size, leaf.rSize);
-  const swayFreq = 0.01 + leaf.rSwayFreq * 0.02;
-  const flipFreq = 0.02 + leaf.rFlipFreq * 0.04;
+  const swayFreq = (0.01 + leaf.rSwayFreq * 0.02) * profile.swayFreq;
+  const flipFreq = (0.02 + leaf.rFlipFreq * 0.04) * profile.flip;
 
   leaf.swayPhase += swayFreq * dt;
   leaf.flipPhase += flipFreq * dt;
 
-  const sway = Math.sin(leaf.swayPhase) * pick(opts.sway, leaf.rSway);
+  const sway = Math.sin(leaf.swayPhase) * pick(opts.sway, leaf.rSway) * profile.sway;
   leaf.x += (pick(opts.wind, leaf.rWind) + sway) * dt;
   // Leaves slow down at the ends of each swing, like a real leaf rocking as it falls.
   const flutter = 0.6 + 0.4 * Math.abs(Math.cos(leaf.swayPhase));
   leaf.y += pick(opts.speed, leaf.rSpeed) * flutter * dt;
-  leaf.rotation += pick(opts.rotationSpeed, leaf.rRotation) * dt;
+  leaf.rotation += pick(opts.rotationSpeed, leaf.rRotation) * profile.spin * dt;
 
   if (leaf.y - size > height) {
     Object.assign(leaf, createLeaf(opts, width, height, variants, random, false));

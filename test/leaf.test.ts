@@ -77,6 +77,19 @@ describe('stepLeaf', () => {
     expect(leaf.x).toBeLessThan(0);
   });
 
+  it('swings a light leaf further side to side and spins it less', () => {
+    const swaying = { ...opts, sway: 2 };
+    const a = createLeaf(swaying, 800, 600, 1, seeded(11), true);
+    a.x = 400;
+    a.y = 100;
+    a.swayPhase = Math.PI / 2;
+    const b = { ...a };
+    stepLeaf(a, 1, swaying, 800, 600, 1, seeded(1));
+    stepLeaf(b, 1, swaying, 800, 600, 1, seeded(1), { sway: 2, swayFreq: 1, spin: 0.2, flip: 1, rock: 0 });
+    expect(Math.abs(b.x - 400)).toBeGreaterThan(Math.abs(a.x - 400) * 1.5);
+    expect(b.rotation - a.rotation + 1).toBeCloseTo(0.2);
+  });
+
   it('moves twice as far in a frame twice as long', () => {
     const a = createLeaf(opts, 800, 600, 1, seeded(9), true);
     a.y = 100;

@@ -1,5 +1,7 @@
 # falling-leaves 🍂
 
+**[Live demo](https://ernkerr.github.io/falling-leaves/)**
+
 Falling autumn leaves for any website. Small (~8 KB minified), no dependencies, drawn on a canvas, with an optional React component.
 
 - Maple leaves by default, plus oak, ginkgo, birch and oval shapes, or your own leaf images

@@ -1,3 +1,5 @@
+import type { MotionProfile } from './leaf';
+
 export type LeafShape = 'maple' | 'oak' | 'ginkgo' | 'birch' | 'oval';
 
 /** All built-in shapes. */
@@ -16,6 +18,15 @@ export const SHAPE_COLORS: Partial<Record<LeafShape, string[]>> = {
 
 /** Where each shape's stem joins the leaf. */
 const STEM_BASE: Record<LeafShape, number> = { maple: 0.45, oak: 0.6, ginkgo: 0.45, birch: 0.65, oval: 0.8 };
+
+/**
+ * Ginkgo and birch leaves are light and flat, so they drift and rock side
+ * to side as they fall rather than spinning. Other shapes use the default.
+ */
+export const SHAPE_MOTION: Partial<Record<LeafShape, MotionProfile>> = {
+  ginkgo: { sway: 2.2, swayFreq: 1.4, spin: 0.15, flip: 0.4, rock: 35 },
+  birch: { sway: 1.9, swayFreq: 1.3, spin: 0.2, flip: 0.5, rock: 30 },
+};
 
 /** Sprites are drawn once at this size and scaled down for each leaf. */
 const SPRITE_SIZE = 128;

@@ -1,5 +1,5 @@
-import { createLeaf, maxSize, pick, stepLeaf, type Leaf, type MotionOptions } from './leaf';
-import { createLeafSprite, DEFAULT_SHAPES, SHAPE_COLORS, type LeafShape } from './sprites';
+import { createLeaf, DEFAULT_PROFILE, maxSize, pick, stepLeaf, type Leaf, type MotionOptions, type MotionProfile } from './leaf';
+import { createLeafSprite, DEFAULT_SHAPES, SHAPE_COLORS, SHAPE_MOTION, type LeafShape } from './sprites';
 
 export interface FallingLeavesOptions extends Partial<MotionOptions> {
   /**
@@ -60,6 +60,8 @@ export class FallingLeaves {
   private readonly fullPage: boolean;
   private leaves: Leaf[] = [];
   private drawables: CanvasImageSource[] = [];
+  /** How each drawable's leaves move, in the same order as `drawables`. */
+  private profiles: MotionProfile[] = [];
   private spriteKey = '';
   private width = 0;
   private height = 0;
@@ -183,6 +185,7 @@ export class FallingLeaves {
     const { images, colors, shapes = DEFAULT_SHAPES } = this.options;
     if (images && images.length > 0) {
       this.drawables = images;
+      this.profiles = images.map(() => DEFAULT_PROFILE);
       this.spriteKey = '';
       return;
     }
@@ -190,9 +193,11 @@ export class FallingLeaves {
     if (key === this.spriteKey) return;
     this.spriteKey = key;
     this.drawables = [];
+    this.profiles = [];
     for (const shape of shapes) {
       for (const color of colors ?? SHAPE_COLORS[shape] ?? DEFAULT_COLORS) {
         this.drawables.push(createLeafSprite(color, shape));
+        this.profiles.push(SHAPE_MOTION[shape] ?? DEFAULT_PROFILE);
       }
     }
   }
@@ -219,7 +224,7 @@ export class FallingLeaves {
     const motion = this.motion;
     const n = this.drawables.length;
     for (const leaf of this.leaves) {
-      stepLeaf(leaf, dt, motion, this.width, this.height, n, Math.random);
+      stepLeaf(leaf, dt, motion, this.width, this.height, n, Math.random, this.profiles[leaf.variant]);
     }
     this.draw();
     this.frame = requestAnimationFrame(this.tick);
@@ -241,7 +246,8 @@ export class FallingLeaves {
 
       ctx.save();
       ctx.translate(leaf.x, leaf.y);
-      ctx.rotate((leaf.rotation * Math.PI) / 180);
+      const rock = (this.profiles[leaf.variant] ?? DEFAULT_PROFILE).rock * Math.cos(leaf.swayPhase);
+      ctx.rotate(((leaf.rotation + rock) * Math.PI) / 180);
       // Squash one way to fake the leaf tumbling over in 3D.
       ctx.scale(Math.cos(leaf.flipPhase), 1);
       ctx.drawImage(img, -size / 2, -size / 2, size, size);
