@@ -2,7 +2,7 @@
 
 Falling autumn leaves for any website. Small (~8 KB minified), no dependencies, drawn on a canvas, with an optional React component.
 
-- Maple, oak, ginkgo, birch and oval leaves in autumn colors, or your own leaf images
+- Maple leaves by default, plus oak, ginkgo, birch and oval shapes, or your own leaf images
 - Leaves sway, spin and tumble as they fall
 - Change options while it runs, with no restart
 - Doesn't animate for people whose system asks for reduced motion
@@ -65,7 +65,7 @@ Range options take either one number or a `[min, max]` pair, and each leaf picks
 | `sway` | `[0.4, 1.4]` | How far leaves swing side to side |
 | `rotationSpeed` | `[-1.5, 1.5]` | Spin in degrees per frame |
 | `colors` | autumn palette | Leaf colors (any CSS color). By default ginkgo leaves are gold |
-| `shapes` | `['maple', 'oak', 'ginkgo', 'birch']` | Which built-in shapes to use: `'maple'`, `'oak'`, `'ginkgo'`, `'birch'`, `'oval'` |
+| `shapes` | `['maple']` | Which built-in shapes to use: `'maple'`, `'oak'`, `'ginkgo'`, `'birch'`, `'oval'` |
 | `images` | — | Your own leaf images (`HTMLImageElement`, canvas, etc.). Replaces `colors` and `shapes` |
 | `opacity` | `1` | Leaf opacity |
 | `zIndex` | `9999` full page, `0` in a container | Canvas z-index |

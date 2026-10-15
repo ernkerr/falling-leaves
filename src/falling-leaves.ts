@@ -16,7 +16,7 @@ export interface FallingLeavesOptions extends Partial<MotionOptions> {
   colors?: string[];
   /**
    * Built-in leaf shapes to mix: `'maple'`, `'oak'`, `'ginkgo'`, `'birch'`
-   * and `'oval'`. Default is every shape except `'oval'`.
+   * and `'oval'`. Default `['maple']`.
    */
   shapes?: LeafShape[];
   /**

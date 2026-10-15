@@ -4,7 +4,7 @@ export type LeafShape = 'maple' | 'oak' | 'ginkgo' | 'birch' | 'oval';
 export const LEAF_SHAPES: LeafShape[] = ['maple', 'oak', 'ginkgo', 'birch', 'oval'];
 
 /** Shapes used when no `shapes` option is given. */
-export const DEFAULT_SHAPES: LeafShape[] = ['maple', 'oak', 'ginkgo', 'birch'];
+export const DEFAULT_SHAPES: LeafShape[] = ['maple'];
 
 /**
  * Colors a shape uses when no `colors` option is given. Ginkgo leaves turn
