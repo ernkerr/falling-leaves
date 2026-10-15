@@ -29,13 +29,13 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # The site is the demo page, with the built package next to it.
+      # The site is the demo page at the root, with the built package next to it.
       - name: Assemble site
         run: |
-          mkdir -p _site/demo
-          cp demo/index.html _site/demo/index.html
+          mkdir -p _site
+          sed "s#'../dist/#'./dist/#" demo/index.html > _site/index.html
+          grep -q "'./dist/index.js'" _site/index.html
           cp -r dist _site/dist
-          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=demo/"><a href="demo/">falling-leaves demo</a>\n' > _site/index.html
       - uses: actions/upload-pages-artifact@v3
       - id: deployment
         uses: actions/deploy-pages@v4
